@@ -58,4 +58,4 @@ main(): The main function that sets up the Streamlit interface and orchestrates 
 Contributions are welcome! Please fork this repository and submit a pull request with your changes.
 
 ## License
-This project is licensed under the MIT License. See the LICENSE file for more details.
+This project is licensed under the Apache License. See the LICENSE file for more details.
