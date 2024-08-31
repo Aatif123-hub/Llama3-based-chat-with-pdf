@@ -27,6 +27,9 @@ This Streamlit application allows you to interact with multiple PDF documents us
     ```python
     cd Llama3-based-chat-with-pdf
     ```
+    ```python
+    code .
+    ```
 3. **Install the Required Dependencies**
 
    ```python
