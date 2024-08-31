@@ -36,7 +36,7 @@ bot_template = '''
 
 import base64
 
-with open("/Users/aatif/Downloads/IMG_6471.JPG", "rb") as img_file:
+with open("your/image source", "rb") as img_file:
     img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
 
 user_template = f'''
