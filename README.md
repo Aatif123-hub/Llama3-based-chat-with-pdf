@@ -51,17 +51,17 @@ This Streamlit application allows you to interact with multiple PDF documents us
    Use this command in your terminal to run the project
 
 ## Main Components
-get_pdf_text(pdf_docs): Extracts text from the uploaded PDF files.
+**get_pdf_text(pdf_docs)**: Extracts text from the uploaded PDF files.
 
-get_text_chunks(text): Splits the extracted text into manageable chunks.
+**get_text_chunks(text):** Splits the extracted text into manageable chunks.
 
-get_vectorstore(text_chunks): Stores the text chunks in a vector database for retrieval.
+**get_vectorstore(text_chunks):** Stores the text chunks in a vector database for retrieval.
 
-get_conversation_chain(vectorstore): Initializes the LLaMA 3 model and sets up the conversational chain.
+**get_conversation_chain(vectorstore):** Initializes the LLaMA 3 model and sets up the conversational chain.
 
-handle_userinput(user_question): Handles user questions and provides answers based on the content of the PDFs.
+**handle_userinput(user_question):** Handles user questions and provides answers based on the content of the PDFs.
 
-main(): The main function that sets up the Streamlit interface and orchestrates the flow.
+**main():** The main function that sets up the Streamlit interface and orchestrates the flow.
 
 ## Contributing
 
