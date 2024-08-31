@@ -22,17 +22,20 @@ This Streamlit application allows you to interact with multiple PDF documents us
 1. **Clone the Repository**
 
    git clone https://github.com/Aatif123-hub/Llama3-based-chat-with-pdf.git
+
    cd Llama3-based-chat-with-pdf
    
-2. **Install the Required Dependencies**
+3. **Install the Required Dependencies**
 
    pip install -r requirements.txt
+
    you might need to install a few packages which are not mentioned in the requirements file
 
 4. **Add the access tokens to the .env file**
 
    Add the huggingface token to use the embeddings
-   I have not added the openai token because I am not using the chatgpt model
+
+    I have not added the openai token because I am not using the chatgpt model
 
 3. **Start the Streamlit Application**
 
