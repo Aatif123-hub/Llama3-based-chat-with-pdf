@@ -27,11 +27,12 @@ This Streamlit application allows you to interact with multiple PDF documents us
    
 3. **Install the Required Dependencies**
 
+   ```python
    pip install -r requirements.txt
-
+   ```
    you might need to install a few packages which are not mentioned in the requirements file
 
-4. **Add the access tokens to the .env file**
+5. **Add the access tokens to the .env file**
 
    Add the huggingface token to use the embeddings
 
