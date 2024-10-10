@@ -2,14 +2,18 @@ import streamlit as st
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings, HuggingFaceInstructEmbeddings
-from langchain.vectorstores import FAISS
-from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from htmlTemplates import css, bot_template, user_template
-from langchain.llms import HuggingFaceHub
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain.prompts import PromptTemplate
+from langchain.vectorstores import Qdrant
+from langchain.chains import LLMChain
+from langchain.chains.question_answering import load_qa_chain
 
+
+#code block to extract text from pdf's
 def get_pdf_text(pdf_docs):
     text = ""
     for pdf in pdf_docs:
@@ -18,7 +22,7 @@ def get_pdf_text(pdf_docs):
             text += page.extract_text()
     return text
 
-
+# Specify the text chunks hyperparameters     
 def get_text_chunks(text):
     text_splitter = CharacterTextSplitter(
         separator="\n",
@@ -29,25 +33,56 @@ def get_text_chunks(text):
     chunks = text_splitter.split_text(text)
     return chunks
 
-
+# Store the pdfs in a vector databse to retrieve information from it
 def get_vectorstore(text_chunks):
-    embeddings = OpenAIEmbeddings()
-    # embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
-    vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
+    embeddings = HuggingFaceEmbeddings()
+   # For an in-memory Qdrant instance
+
+    vectorstore = Qdrant.from_texts(
+         texts=text_chunks, 
+         embedding=embeddings,
+         url="QDRANT_URL",
+         api_key = "QDRANT_API_KEY",
+         collection_name="COLLECTION_NAME"
+    )
     return vectorstore
 
-
+# Initialize the Gen AI model and its hyperparameters. Also, provide a specific prompt template for the llm 
 def get_conversation_chain(vectorstore):
-    llm = ChatOpenAI()
-    # llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature":0.5, "max_length":512})
+    llm = ChatOpenAI(
+        model="llama3",
+        base_url="http://localhost:11434/v1",
+        temperature=0.1,
+        max_tokens=4096,
+        api_key="NA"
+    )
+
+    prompt_template = """
+    You are a respectful and honest assistant. You have to answer the user's questions using only the context
+    provided to you. If you don't know the answer, just say you don't know. Don't try to make up an answer.\n\n
+    Context:\n {context}?\n
+    Question: \n{question}\n
+
+    Answer:
+    """
+    prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
+
+    qa_chain = load_qa_chain(llm, chain_type="stuff", prompt=prompt)
+
+    question_gen_prompt = PromptTemplate(template="{question}", input_variables=["question"])
+    question_generator = LLMChain(llm=llm, prompt=question_gen_prompt)
 
     memory = ConversationBufferMemory(
-        memory_key='chat_history', return_messages=True)
-    conversation_chain = ConversationalRetrievalChain.from_llm(
-        llm=llm,
+        memory_key='chat_history', return_messages=True
+    )
+
+    conversation_chain = ConversationalRetrievalChain(
         retriever=vectorstore.as_retriever(),
+        combine_docs_chain=qa_chain,
+        question_generator=question_generator,  
         memory=memory
     )
+
     return conversation_chain
 
 
@@ -67,7 +102,7 @@ def handle_userinput(user_question):
 def main():
     load_dotenv()
     st.set_page_config(page_title="Chat with multiple PDFs",
-                       page_icon=":books:")
+                       page_icon="🦙")
     st.write(css, unsafe_allow_html=True)
 
     if "conversation" not in st.session_state:
@@ -75,27 +110,24 @@ def main():
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
 
-    st.header("Chat with multiple PDFs :books:")
-    user_question = st.text_input("Ask a question about your documents:")
+    st.header("Chat with your PDF using LLaMA 3 🦙")
+    user_question = st.text_input("Ask a question about your PDF Files:")
     if user_question:
         handle_userinput(user_question)
 
     with st.sidebar:
-        st.subheader("Your documents")
+        st.subheader("Here are your uploaded PDF Files")
         pdf_docs = st.file_uploader(
             "Upload your PDFs here and click on 'Process'", accept_multiple_files=True)
-        if st.button("Process"):
-            with st.spinner("Processing"):
-                # get pdf text
+        if st.button("Submit and Process"):
+            with st.spinner("Processing..."):
+   
                 raw_text = get_pdf_text(pdf_docs)
 
-                # get the text chunks
                 text_chunks = get_text_chunks(raw_text)
 
-                # create vector store
                 vectorstore = get_vectorstore(text_chunks)
 
-                # create conversation chain
                 st.session_state.conversation = get_conversation_chain(
                     vectorstore)
 
